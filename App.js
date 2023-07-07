@@ -1,69 +1,35 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, Image } from 'react-native';
 import React, {useEffect, useState} from 'react';
+import { FavScreen } from './components/FavScreen';
+import {StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {MaterialCommunityIcons } from '@expo/vector-icons';
+import PokemonComponent from './components/Pokemons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FavouriteContext } from './components/FavouriteContext';
 
 const TabNav = createBottomTabNavigator();
 
-const HomeScreen = ({navigation}) => {
-  return <PokemonComponent />;
-};
-const ProfileScreen = ({navigation, route}) => {
-  return <Text>Favourites here</Text>;
-};
-const MapScreen = ({navigation, route}) => {
-  return <Text>Mapka here</Text>;
-};
-
-
-
-const PokemonComponent = () => {
-  const [pokemonData, setPokemonData] = useState([]);
-
-  useEffect(() => {
-    const fetchPokemonData = async () => {
-      try {
-        const response = await fetch('https://pokeapi.co/api/v2/pokemon');
-        const jsonData = await response.json();
-        setPokemonData(jsonData.results);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchPokemonData();
-  }, []);
-
-  const renderPokemon = ({ item }) => {
-    const pokemonImageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.url.split('/')[6]}.png`;
-
-    return (
-      <View style={styles.item}>
-        <Image source={{ uri: pokemonImageUrl }} style={{ width: 100, height: 100 }} />
-        <Text style={styles.item}>{item.name}</Text>
-        {/* <Text style={styles.item}>{item.id}</Text> */}
-      </View>
-    );
-  };
-
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={pokemonData}
-        renderItem={renderPokemon}
-        keyExtractor={(item) => item.name}
-        ListFooterComponent={() => (
-          <Text style={{ fontSize: 30, textAlign: "center",marginBottom:20,fontWeight:'bold' }}>Thank You</Text>
-      )}
-      />
-    </View>
-  );
-};
-
 const App = () => {
+  const [myFavPokemon, setMyFavPokemon] = useState(null);
+
+  useEffect(()=>{
+    getFavouritePokemon();
+    console.log("h333")
+  }, []);
+  
+  const getFavouritePokemon = async () => {
+    try{
+    const jsonValue =  await AsyncStorage.getItem('@favourite_pokemon');
+    setMyFavPokemon(jsonValue != null? JSON.parse(jsonValue): null)
+    }catch(err){
+      console.log(err);
+    }
+  }
+
   return (
+  <FavouriteContext.Provider value={{myFavPokemon, setMyFavPokemon}} >
     <NavigationContainer>
       <StatusBar style="auto" />
       <TabNav.Navigator
@@ -72,7 +38,7 @@ const App = () => {
             let iconName;
             if (route.name === 'Home') {
               iconName = focused ? 'pokemon-go' : 'pokeball';
-            } else if (route.name === 'Favourites') {
+            } else if (route.name === 'Favourite') {
               iconName = focused ? 'cards-heart' : 'cards-heart-outline';
             }else if (route.name === 'Pokemap') {
               iconName = focused ? 'map-marker' : 'map-marker-outline';
@@ -84,13 +50,13 @@ const App = () => {
         })}>
         <TabNav.Screen
           name="Home"
-          component={HomeScreen}
-          options={{title: 'Welcome'}}
+          component={PokemonComponent}
+          options={{title: 'Home'}}
         />
-        <TabNav.Screen name='Favourites' component={ProfileScreen} />
-        <TabNav.Screen name='Pokemap' component={MapScreen} />
+        <TabNav.Screen name='Favourite' component={FavScreen} />
       </TabNav.Navigator>
     </NavigationContainer>
+  </FavouriteContext.Provider>
   );
 };
 
