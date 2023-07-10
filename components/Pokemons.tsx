@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, Image, TouchableOpacity, StyleSheet, FlatList} from 'react-native';
+import {View, Image, TouchableOpacity, StyleSheet, FlatList, Pressable} from 'react-native';
 import { Details } from './Details';
+import { PokemonType } from '../@types/pokemonType';
 
-const Pokemons = props => {
-  const [pokemons, setPokemons] = useState([]);
-  const [nextPageUrl, setNextPageUrl] = useState(null);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [currPokemon, setCurrPokemon] = useState(null);
+const Pokemons = () => {
+  const [pokemons, setPokemons] = useState<PokemonType[]>([]);
+  const [nextPageUrl, setNextPageUrl] = useState<string>(null);
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [currPokemon, setCurrPokemon] = useState<PokemonType>(null);
 
   useEffect(() => {
     fetchPokemons();
@@ -23,17 +24,17 @@ const Pokemons = props => {
 
   const renderPokemonCard = ({ item }) => {
     return (
-      <View>
+      <View className='items-center w-1/2 rounded-3xl mt-6'>
       <TouchableOpacity
+      className = 'items-center w-4/5 rounded-2xl items-center bg-pink-200 shadow'
         activeOpacity={0.5}
-        style={styles.card}
         onPress={() =>{
           setModalVisible(true);
           setCurrPokemon(item);
         }}
       >
         <Image
-          style={{ width: 150, height: 150 }}
+          style={{ width: 150, height: 120 }}
           source={{
             uri: `https://img.pokemondb.net/sprites/omega-ruby-alpha-sapphire/dex/normal/${item.name}.png`,
           }}
@@ -45,21 +46,19 @@ const Pokemons = props => {
 
 
   return (
-    <View style={styles.centeredView}>
+    <View className = 'items-center w-full'>
       <Details 
       isModalVisible = {isModalVisible} 
       onPress={() => setModalVisible(false)}
       currPokemon = {currPokemon}
       />
       <FlatList
+        numColumns={2}
         data={pokemons}
         renderItem={renderPokemonCard}
         keyExtractor={(item) => item.name}
         onEndReached={fetchPokemons}
         onEndReachedThreshold={0.5}
-        ItemSeparatorComponent={() => (
-          <View style={styles.separator} />
-        )}
       />
     </View>
   );
@@ -67,34 +66,3 @@ const Pokemons = props => {
 
 
 export default Pokemons;
-
-
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 30,
-  },
-  card: {
-    display: 'flex',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    marginVertical: 10,
-  },
-  separator: {
-    borderBottomWidth: 1,
-  },
-  modalView: {
-    top: '30%',
-    backgroundColor: 'pink',
-    height: '20%',
-    width: '50%',
-    borderRadius: 20,
-    alignItems: 'center',
-    margin: '25%'
-  }
-});
